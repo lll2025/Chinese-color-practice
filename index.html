@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>京剧脸谱色彩课堂</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .face-img {
+            width: 300px;
+            height: 400px;
+            object-fit: contain;
+            margin: 20px 0;
+            border: 3px solid #333;
+        }
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px;
+        }
+        .color-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #f5f5f5;
+            color: #333;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .color-btn.selected {
+            border-color: #666;
+            background-color: #e0e0e0;
+        }
+        .correct { border-color: #4CAF50 !important; }
+        .wrong { border-color: #ff4444 !important; }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .nav-btn {
+            padding: 12px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: opacity 0.3s;
+        }
+        #prevBtn {
+            background-color: #2196F3;
+            color: white;
+        }
+        #nextBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .nav-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .progress {
+            font-size: 18px;
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress">第 <span id="current">1</span>/<span id="total">6</span> 张</div>
+        <img id="face" class="face-img" alt="京剧脸谱">
+        <div class="color-palette" id="colorPalette"></div>
+        <div class="button-container">
+            <button id="prevBtn" class="nav-btn" onclick="prevFace()" disabled>← 上一张</button>
+            <button id="nextBtn" class="nav-btn" onclick="nextFace()" disabled>下一张 ➔</button>
+        </div>
+    </div>
+
+<script>
+const faceData = [
+    { 
+        image: "face1.jpg",
+        correctColors: ["红色", "黑色", "白色"],
+        wrongColors: ["绿色", "黄色", "咖啡色", "蓝色"]
+    },
+    { 
+        image: "face2.jpg",
+        correctColors: ["绿色", "黄色", "白色", "黑色", "红色"],
+        wrongColors: ["咖啡色", "蓝色"]
+    },
+    { 
+        image: "face3.jpg",
+        correctColors: ["白色", "红色", "黑色", "黄色"],
+        wrongColors: ["绿色", "咖啡色", "蓝色"]
+    },
+    { 
+        image: "face4.jpg",
+        correctColors: ["黑色", "黄色", "红色", "白色"],
+        wrongColors: ["绿色", "咖啡色", "蓝色"]
+    },
+    { 
+        image: "face5.jpg",
+        correctColors: ["咖啡色", "白色", "黑色", "黄色"],
+        wrongColors: ["红色", "绿色", "蓝色"]
+    },
+    { 
+        image: "face6.jpg",
+        correctColors: ["蓝色", "白色", "黑色", "黄色", "红色"],
+        wrongColors: ["绿色", "咖啡色"]
+    }
+];
+
+let currentIndex = 0;
+let selectedColors = new Set();
+
+function createColorButtons() {
+    const palette = document.getElementById("colorPalette");
+    palette.innerHTML = "";
+    
+    const allColors = [...faceData[currentIndex].correctColors, 
+                    ...faceData[currentIndex].wrongColors]
+                   .sort(() => Math.random() - 0.5);
+
+    allColors.forEach(color => {
+        const button = document.createElement("button");
+        button.className = "color-btn";
+        button.textContent = color;
+        button.onclick = () => toggleColor(color, button);
+        palette.appendChild(button);
+    });
+}
+
+function toggleColor(color, button) {
+    selectedColors.has(color) ? 
+        selectedColors.delete(color) : 
+        selectedColors.add(color);
+    button.classList.toggle("selected");
+    validateSelection();
+}
+
+function validateSelection() {
+    const correct = faceData[currentIndex].correctColors;
+    const allCorrect = correct.every(c => selectedColors.has(c)) 
+                     && selectedColors.size === correct.length;
+    const noWrong = faceData[currentIndex].wrongColors.every(w => !selectedColors.has(w));
+    
+    document.querySelectorAll(".color-btn").forEach(btn => {
+        btn.classList.remove("correct", "wrong");
+        if (selectedColors.has(btn.textContent)) {
+            btn.classList.add(correct.includes(btn.textContent) ? "correct" : "wrong");
+        }
+    });
+
+    document.getElementById("nextBtn").disabled = !(allCorrect && noWrong);
+}
+
+function updateNavigation() {
+    document.getElementById("prevBtn").disabled = currentIndex === 0;
+    document.getElementById("nextBtn").disabled = currentIndex === faceData.length - 1;
+}
+
+function updateFace() {
+    document.getElementById("face").src = faceData[currentIndex].image;
+    document.getElementById("current").textContent = currentIndex + 1;
+    selectedColors.clear();
+    createColorButtons();
+    validateSelection();
+    updateNavigation();
+}
+
+function prevFace() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        updateFace();
+    }
+}
+
+function nextFace() {
+    if (currentIndex < faceData.length - 1) {
+        currentIndex++;
+        updateFace();
+    } else {
+        alert("🎉 恭喜完成所有练习！");
+    }
+}
+
+// 初始化
+updateFace();
+</script>
+</body>
+</html>
