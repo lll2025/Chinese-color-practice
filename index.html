@@ -4,196 +4,185 @@
     <meta charset="UTF-8">
     <title>京剧脸谱色彩课堂</title>
     <style>
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .face-img {
-            width: 300px;
-            height: 400px;
-            object-fit: contain;
-            margin: 20px 0;
-            border: 3px solid #333;
-        }
-        .color-palette {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px;
-        }
+        body, html { margin:0; padding:0; height:100%; font-family:sans-serif; }
+        .container { max-width:800px; margin:0 auto; text-align:center; padding-top:20px; }
+        .face-img { width:300px; height:400px; object-fit:contain; margin:20px 0; border:3px solid #333; }
+        .color-palette { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:20px; }
         .color-btn {
-            padding: 12px 24px;
-            font-size: 16px;
-            background-color: #f5f5f5;
-            color: #333;
-            border: 2px solid #ddd;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding:12px 24px; font-size:16px; background:#f5f5f5; color:#333;
+            border:2px solid #ddd; border-radius:25px; cursor:pointer;
+            transition:transform .2s, box-shadow .2s;
         }
-        .color-btn.selected {
-            border-color: #666;
-            background-color: #e0e0e0;
+        .color-btn.correct { border-color:#4CAF50 !important; }
+        .color-btn.wrong   { border-color:#f44336 !important; }
+        .color-btn:hover {
+            transform:scale(1.1); box-shadow:0 0 10px rgba(0,0,0,0.2);
         }
-        .correct { border-color: #4CAF50 !important; }
-        .wrong { border-color: #ff4444 !important; }
-        .button-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
+        .button-container { display:flex; gap:20px; justify-content:center; }
         .nav-btn {
-            padding: 12px 30px;
-            font-size: 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: opacity 0.3s;
+            padding:12px 30px; font-size:18px; border:none; border-radius:5px;
+            cursor:pointer; margin-top:20px; transition:opacity .3s;
         }
-        #prevBtn {
-            background-color: #2196F3;
-            color: white;
-        }
-        #nextBtn {
-            background-color: #4CAF50;
-            color: white;
-        }
+        #prevBtn { background:#2196F3; color:#fff; }
+        #nextBtn { background:#4CAF50; color:#fff; }
         .nav-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
+            background:#ccc; cursor:not-allowed; opacity:.7;
         }
-        .progress {
-            font-size: 18px;
-            color: #666;
-            margin: 10px 0;
+        .progress { font-size:18px; color:#666; margin:10px 0; }
+        #endScreen {
+            display:none;
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:#fff; z-index:1000;
+            justify-content:center; align-items:center; flex-direction:column;
+            font-size:32px; color:#4CAF50;
         }
+        #endScreen button {
+            padding:10px 20px; font-size:20px; border:none;
+            border-radius:5px; cursor:pointer; margin:10px;
+        }
+        .restart { background:#2196F3; color:#fff; }
+        .quit    { background:#f44336; color:#fff; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="progress">第 <span id="current">1</span>/<span id="total">6</span> 张</div>
+        <div class="progress">第 <span id="current">1</span> / <span id="total">6</span> 张</div>
         <img id="face" class="face-img" alt="京剧脸谱">
-        <div class="color-palette" id="colorPalette"></div>
+        <div id="colorPalette" class="color-palette"></div>
         <div class="button-container">
             <button id="prevBtn" class="nav-btn" onclick="prevFace()" disabled>← 上一张</button>
             <button id="nextBtn" class="nav-btn" onclick="nextFace()" disabled>下一张 ➔</button>
         </div>
     </div>
 
-<script>
-const faceData = [
-    { 
-        image: "face1.jpg",
-        correctColors: ["红色", "黑色", "白色"],
-        wrongColors: ["绿色", "黄色", "咖啡色", "蓝色"]
-    },
-    { 
-        image: "face2.jpg",
-        correctColors: ["绿色", "黄色", "白色", "黑色", "红色"],
-        wrongColors: ["咖啡色", "蓝色"]
-    },
-    { 
-        image: "face3.jpg",
-        correctColors: ["白色", "红色", "黑色", "黄色"],
-        wrongColors: ["绿色", "咖啡色", "蓝色"]
-    },
-    { 
-        image: "face4.jpg",
-        correctColors: ["黑色", "黄色", "红色", "白色"],
-        wrongColors: ["绿色", "咖啡色", "蓝色"]
-    },
-    { 
-        image: "face5.jpg",
-        correctColors: ["咖啡色", "白色", "黑色", "黄色"],
-        wrongColors: ["红色", "绿色", "蓝色"]
-    },
-    { 
-        image: "face6.jpg",
-        correctColors: ["蓝色", "白色", "黑色", "黄色", "红色"],
-        wrongColors: ["绿色", "咖啡色"]
+    <div id="endScreen">
+        <div id="endMessage">🎉 恭喜你，练习结束！</div>
+        <div>
+            <button class="restart" onclick="restartGame()">再练习一次</button>
+            <button class="quit"    onclick="endGame()">结束练习</button>
+        </div>
+    </div>
+
+    <script>
+    // 音效
+    const clickSound   = new Audio('click.mp3');
+    const errorSound   = new Audio('error.mp3');
+    const correctSound = new Audio('correct.mp3');
+    const victorySound = new Audio('victory.mp3');
+
+    // 题目数据
+    const faceData = [
+        { image:"face1.jpg", correctColors:["红色","黑色","白色"], wrongColors:["绿色","黄色","咖啡色","蓝色"] },
+        { image:"face2.jpg", correctColors:["绿色","黄色","白色","黑色","红色"], wrongColors:["咖啡色","蓝色"] },
+        { image:"face3.jpg", correctColors:["白色","红色","黑色","黄色"], wrongColors:["绿色","咖啡色","蓝色"] },
+        { image:"face4.jpg", correctColors:["黑色","黄色","红色","白色"], wrongColors:["绿色","咖啡色","蓝色"] },
+        { image:"face5.jpg", correctColors:["咖啡色","白色","黑色","黄色"], wrongColors:["红色","绿色","蓝色"] },
+        { image:"face6.jpg", correctColors:["蓝色","白色","黑色","黄色","红色"], wrongColors:["绿色","咖啡色"] }
+    ];
+
+    let currentIndex = 0;
+    let selectedColors = new Set();
+
+    function createColorButtons() {
+        const palette = document.getElementById("colorPalette");
+        palette.innerHTML = "";
+        const all = [...faceData[currentIndex].correctColors, ...faceData[currentIndex].wrongColors]
+                    .sort(() => Math.random() - 0.5);
+        all.forEach(color => {
+            const btn = document.createElement("button");
+            btn.className = "color-btn";
+            btn.textContent = color;
+            btn.onclick      = () => toggleColor(color, btn);
+            btn.onmouseenter = () => clickSound.play();
+            palette.appendChild(btn);
+        });
     }
-];
 
-let currentIndex = 0;
-let selectedColors = new Set();
-
-function createColorButtons() {
-    const palette = document.getElementById("colorPalette");
-    palette.innerHTML = "";
-    
-    const allColors = [...faceData[currentIndex].correctColors, 
-                    ...faceData[currentIndex].wrongColors]
-                   .sort(() => Math.random() - 0.5);
-
-    allColors.forEach(color => {
-        const button = document.createElement("button");
-        button.className = "color-btn";
-        button.textContent = color;
-        button.onclick = () => toggleColor(color, button);
-        palette.appendChild(button);
-    });
-}
-
-function toggleColor(color, button) {
-    selectedColors.has(color) ? 
-        selectedColors.delete(color) : 
-        selectedColors.add(color);
-    button.classList.toggle("selected");
-    validateSelection();
-}
-
-function validateSelection() {
-    const correct = faceData[currentIndex].correctColors;
-    const allCorrect = correct.every(c => selectedColors.has(c)) 
-                     && selectedColors.size === correct.length;
-    const noWrong = faceData[currentIndex].wrongColors.every(w => !selectedColors.has(w));
-    
-    document.querySelectorAll(".color-btn").forEach(btn => {
-        btn.classList.remove("correct", "wrong");
-        if (selectedColors.has(btn.textContent)) {
-            btn.classList.add(correct.includes(btn.textContent) ? "correct" : "wrong");
+    function toggleColor(color, btn) {
+        if (selectedColors.has(color)) {
+            selectedColors.delete(color);
+            btn.classList.remove("selected");
+        } else {
+            selectedColors.add(color);
+            btn.classList.add("selected");
         }
-    });
+        validateSelection();
+    }
 
-    document.getElementById("nextBtn").disabled = !(allCorrect && noWrong);
-}
+    function validateSelection() {
+        const corr  = faceData[currentIndex].correctColors;
+        const wrong = faceData[currentIndex].wrongColors;
+        let hasWrong = false;
 
-function updateNavigation() {
-    document.getElementById("prevBtn").disabled = currentIndex === 0;
-    document.getElementById("nextBtn").disabled = currentIndex === faceData.length - 1;
-}
+        document.querySelectorAll(".color-btn").forEach(btn => {
+            const txt = btn.textContent;
+            btn.classList.remove("correct","wrong");
+            if (selectedColors.has(txt)) {
+                if (corr.includes(txt)) btn.classList.add("correct");
+                else { btn.classList.add("wrong"); hasWrong = true; }
+            }
+        });
 
-function updateFace() {
-    document.getElementById("face").src = faceData[currentIndex].image;
-    document.getElementById("current").textContent = currentIndex + 1;
-    selectedColors.clear();
-    createColorButtons();
-    validateSelection();
-    updateNavigation();
-}
+        if (hasWrong) errorSound.play();
 
-function prevFace() {
-    if (currentIndex > 0) {
-        currentIndex--;
+        const allCorrect = corr.every(c => selectedColors.has(c)) && selectedColors.size === corr.length;
+        const nextBtn = document.getElementById("nextBtn");
+
+        if (allCorrect && !hasWrong && nextBtn.disabled) {
+            nextBtn.disabled = false;
+            correctSound.play();
+        } else if ((!allCorrect || hasWrong) && !nextBtn.disabled) {
+            nextBtn.disabled = true;
+        }
+    }
+
+    function updateNavigation() {
+        document.getElementById("prevBtn").disabled = (currentIndex === 0);
+    }
+
+    function updateFace() {
+        document.querySelector('.container').style.display = 'block';
+        document.getElementById("endScreen").style.display = 'none';
+        document.getElementById("face").src = faceData[currentIndex].image;
+        document.getElementById("current").textContent = currentIndex + 1;
+        selectedColors.clear();
+        createColorButtons();
+        document.getElementById("nextBtn").disabled = true;
+        updateNavigation();
+    }
+
+    function prevFace() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateFace();
+        }
+    }
+
+    function nextFace() {
+        if (currentIndex < faceData.length - 1) {
+            currentIndex++;
+            updateFace();
+        } else {
+            // 全部完成：隐藏游戏，显示结束界面
+            victorySound.play();
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById("endScreen").style.display = 'flex';
+        }
+    }
+
+    function restartGame() {
+        currentIndex = 0;
         updateFace();
     }
-}
 
-function nextFace() {
-    if (currentIndex < faceData.length - 1) {
-        currentIndex++;
-        updateFace();
-    } else {
-        alert("🎉 恭喜完成所有练习！");
+    function endGame() {
+        document.getElementById("endMessage").textContent = "谢谢参与，再见！";
+        document.querySelectorAll("#endScreen button").forEach(btn => btn.style.display = 'none');
     }
-}
 
-// 初始化
-updateFace();
-</script>
+    // 初始化
+    document.getElementById("total").textContent = faceData.length;
+    updateFace();
+    </script>
 </body>
 </html>
